@@ -1,0 +1,40 @@
+
+#
+#config file for sun50iw10 fastboot
+#
+#stroage
+FILE_EXIST=$(shell if [ -f $(TOPDIR)/board/$(PLATFORM)/common.mk ]; then echo yes; else echo no; fi;)
+ifeq (x$(FILE_EXIST),xyes)
+include $(TOPDIR)/board/$(PLATFORM)/common.mk
+else
+include $(TOPDIR)/board/$(CP_BOARD)/common.mk
+endif
+
+MODULE=mmcfastboot
+CFG_SUNXI_SDMMC =y
+
+CFG_SUNXI_FDT=y
+
+CFG_BOOT0_LOAD_KERNEL=y
+CFG_KERNEL_BOOTIMAGE=y
+CFG_KERNEL_CHECKSUM=n #y will check kernel checksum in bimage, but slower
+CFG_MMC_KERNEL_OFFSET=0x400 # partition mbr size 512 * 1024 / 512 = 0x400 sector
+CFG_MMC_LOGICAL_OFFSET=40960
+CFG_KERNEL_LOAD_ADDR=0x4007f800
+CFG_SUNXI_FDT_ADDR=0x41f00000
+CFG_RESERVE_FDT_SIZE=0x30000
+CFG_SUNXI_NO_UPDATE_FDT_CHOSEN=y
+CFG_LOAD_DTB_FROM_KERNEL=y
+CFG_SUNXI_SUPPORT_RAMDISK=y
+CFG_RAMDISK_ADDR=0x43000000
+
+# logo
+CFG_BOOTLOGO_LOAD_ADDR=0x46000000
+CFG_BOOT0_LOGO_TO_KERNEL=y
+
+CFG_SUNXI_GPT=y
+CFG_MMC_GPT_ARD=0 # 0 or 40960 sector
+CFG_SUNXI_ENV=y
+CFG_SUNXI_ENV_SIZE=0x20000 #linux should be the same with LICHEE_REDUNDANT_ENV_SIZE.
+CFG_SUNXI_HAVE_REDUNDENV=y
+

@@ -1,0 +1,34 @@
+#
+# (C) Copyright 2013-2016
+#  Allwinner Technology Co., Ltd. <www.allwinnertech.com>
+#
+#
+
+
+include $(TOPDIR)/mk/config.mk
+
+LIB	:= $(obj)libsolution_common.o
+
+COBJS += sunxi_bootimage.o
+
+ifdef CFG_SUNXI_FDT
+COBJS += fdt_support.o
+endif
+
+COBJS	:= $(COBJS)
+SRCS	:= $(COBJS:.o=.c)
+OBJS	:= $(addprefix $(obj),$(COBJS))
+
+all:	$(LIB)
+
+$(LIB):	$(obj).depend $(OBJS)
+	$(call cmd_link_o_target, $(OBJS))
+
+#########################################################################
+
+# defines $(obj).depend target
+include $(TOPDIR)/mk/rules.mk
+
+sinclude $(obj).depend
+
+#########################################################################

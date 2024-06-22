@@ -1,1 +1,1 @@
-#define CI_INFO "ec69381431"
+#define CI_INFO "595900dccf"

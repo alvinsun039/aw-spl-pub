@@ -3,7 +3,7 @@
 #config file for sun55iw3
 #
 
-BOARD_BUILD_NBOOT = mmcfastboot mmc_car_fastboot nandfastboot
+BOARD_BUILD_NBOOT = mmcfastboot mmc_car_fastboot
 
 SUPPORT_BOARD=a523 mr527 ai985 t527 a527 h728
 ARCH = arm
@@ -25,6 +25,7 @@ CFG_SUNXI_PMIC=y
 #CFG_AXP858_POWER=y
 #CFG_AXP806_POWER=y
 CFG_AXP2202_POWER=y
+#CFG_AXP8191_POWER=y
 CFG_TCS4838_POWER=y
 CFG_SY8827G_POWER=y
 CFG_AXP1530_EXT_POWER=y

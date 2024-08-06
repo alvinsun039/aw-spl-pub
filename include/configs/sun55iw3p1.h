@@ -93,17 +93,4 @@
 #define GPIO_BASE_ADDR			(0x02000000)
 #define SPI_CLK_PLL_PERI0		(300000000)
 
-/* rtc vccio detected */
-#define FORCE_DETECTER_OUTPUT		(1 << 7)
-#define DEBOUNCE_NO_BYPASS		(1 << 8)
-#define VCCIO_THRESHOLD_VOLTAGE_2_5	(0 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_6	(1 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_7	(2 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_8	(3 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_2_9	(4 << 4)
-#define VCCIO_THRESHOLD_VOLTAGE_3_0	(5 << 4)
-#define VCCIO_THRESHOLD_MASK		0x7
-#define VCCIO_DET_BYPASS_EN		(1 << 0)
-#define VDD_OFF_GATING_CTRL_REG		0x1f4
-
 #endif

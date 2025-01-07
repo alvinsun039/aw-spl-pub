@@ -76,7 +76,7 @@
 #define SID_SN_SIZE			(192)
 #define SID_HUK_SIZE		(192)
 
-#define EFUSE_HUK_PROTECT_OFFSET (9)
+#define EFUSE_HUK_PROTECT_OFFSET (12)
 
 
 #endif    /*  #ifndef __EFUSE_H__  */

@@ -1,0 +1,17 @@
+u-boot-2018 header snapshot
+===========================
+
+Preprocessor-resolved dependency closure of the vendor USB/EFEX stack
+and the FES shims, copied from the Allwinner Tina SDK u-boot-2018 tree
+(brandy/brandy-2.0/u-boot-2018/include and arch/arm/include).  They let
+fes/usb build without a U-Boot source tree.
+
+License: GPL-2.0-or-later, as in the upstream files.
+
+Local fix: linux/log2.h drops the noreturn attribute on ____ilog2_NaN(),
+which GCC 13 rejects when combined with const.  The function is never
+called.
+
+Only the headers the current sources actually include are present.  If
+the vendor stack is updated, regenerate the list with `gcc -M` using the
+include set of ../Makefile.

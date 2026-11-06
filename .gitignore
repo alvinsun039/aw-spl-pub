@@ -17,3 +17,5 @@ nboot/*.lds
 sboot/*.lds
 fes/*.lds
 drivers/dram/sun8iw18p1/libchipid
+
+fes/usb/build/

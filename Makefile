@@ -152,6 +152,8 @@ all:
 	@-ln -s $(TOPDIR)/board/$(CP_BOARD)/commit_info.h include/commit_info.h
 else
 all: mkdepend
+	@[ -e include/commit_info.h ] || \
+		ln -s $(TOPDIR)/board/$(CP_BOARD)/commit_info.h include/commit_info.h
 	$(MAKE) -B -C $(SRCTREE)/fes fes
 	$(call build-boot0-module-if-exist)
 ifneq (x$(BOARD_BUILD_NBOOT),x)
@@ -182,6 +184,8 @@ $(BOARD_BUILD_NBOOT):mkdepend
 	$(MAKE) -C  $(SRCTREE)/nboot $@
 
 fes: mkdepend
+	@[ -e include/commit_info.h ] || \
+		ln -s $(TOPDIR)/board/$(CP_BOARD)/commit_info.h include/commit_info.h
 	$(MAKE) -C $(SRCTREE)/fes fes
 boot0: mkdepend
 	$(call build-boot0-module-if-exist)

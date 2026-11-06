@@ -38,17 +38,38 @@ endif
 else
 #TOOLS_DIR  := $(TOPDIR)/../../../device/config
 #TARGETDIR=$(TOPDIR)/../../../device/config/chips/$(PLATFORM)/bin
+# Only stage into the vendor tree when its config path is known; a
+# standalone build otherwise resolves TARGETDIR to "/bin".
+ifneq ($(LICHEE_CHIP_CONFIG_DIR),)
 ifneq ($(LICHEE_BUSSINESS), )
        TARGETDIR=$(LICHEE_CHIP_CONFIG_DIR)/$(LICHEE_BUSSINESS)/bin
 else
        TARGETDIR=$(LICHEE_CHIP_CONFIG_DIR)/bin
 endif
 endif
+endif
+# Allwinner ships the DRAM training code as a prebuilt object in the
+# vendor workspace (dramlib/<platform>/spl_libdram/libdram); it is not
+# part of this repository.  Override FES_DRAM_LIB for another layout.
+FES_DRAM_LIB ?= $(TOPDIR)/../dramlib/$(PLATFORM)/spl_libdram/libdram
+
 CPUDIR := $(TOPDIR)/arch/$(ARCH)/cpu/$(CPU)
 FES_LDSCRIPT := $(CPUDIR)/fes1.lds
 
 # We want the final binaries in this directory
 FES1_DIR := $(TOPDIR)/fes/
+
+# Vendor USB EFEX stack + FES shims, built in-tree by fes/usb/Makefile.
+FES_MMC_DEV ?= 2
+FES_USB_DIR := $(TOPDIR)/fes/usb/build
+FES_USB_STAMP := $(FES_USB_DIR)/.built
+FES_USB_OBJS := $(FES_USB_DIR)/usbc.o $(FES_USB_DIR)/usbc_dev.o $(FES_USB_DIR)/usbc_dma.o \
+	$(FES_USB_DIR)/usbc_host.o $(FES_USB_DIR)/usbc_phy.o $(FES_USB_DIR)/usb_base_common.o \
+	$(FES_USB_DIR)/usb_base_platform.o $(FES_USB_DIR)/usb_dma_control.o $(FES_USB_DIR)/usb_efex.o \
+	$(FES_USB_DIR)/efex_queue.o $(FES_USB_DIR)/buf_queue.o $(FES_USB_DIR)/usb_burn.o \
+	$(FES_USB_DIR)/gic_v3.o $(FES_USB_DIR)/shims_efex.o $(FES_USB_DIR)/fes_boot.o \
+	$(FES_USB_DIR)/vectors_fes.o \
+	$(FES_USB_DIR)/fes_mmc_write.o $(FES_USB_DIR)/fes_mmc_glue.o
 obj := $(TOPDIR)/fes/
 
 ifdef DRAM_TYPE
@@ -83,11 +104,38 @@ LDPPFLAGS += \
 	  sed -ne 's/GNU ld version \([0-9][0-9]*\)\.\([0-9][0-9]*\).*/-DLD_MAJOR=\1 -DLD_MINOR=\2/p')
 
 
-fes: $(LIBS) fes1.lds
+# The vendor sdcard archive marks its stack executable and the linker
+# script emits a single RWX load segment.  Both are expected before the
+# MMU is up; force a non-exec stack and keep the link output quiet.
+LDFLAGS += -z noexecstack --no-warn-rwx-segments
+
+$(FES_USB_STAMP): $(TOPDIR)/fes/usb/Makefile \
+		$(wildcard $(TOPDIR)/fes/usb/vendor/*.c) \
+		$(wildcard $(TOPDIR)/fes/usb/shims/*.c) \
+		$(wildcard $(TOPDIR)/fes/usb/shims/*.s)
+	$(MAKE) -C $(TOPDIR)/fes/usb CC="$(CC)" TOPDIR="$(TOPDIR)" FES_MMC_DEV="$(FES_MMC_DEV)"
+	@touch $@
+
+$(FES_USB_OBJS): $(FES_USB_STAMP)
+
+$(FES_DRAM_LIB):
+	@echo "error: DRAM training object not found: $(FES_DRAM_LIB)" >&2
+	@echo "       set FES_DRAM_LIB to the vendor dramlib object" >&2
+	@false
+
+# The vendor top-level Makefile creates this symlink only in its
+# configure pass, so a one-shot build from a fresh checkout misses it.
+$(TOPDIR)/include/commit_info.h: $(TOPDIR)/board/$(CP_BOARD)/commit_info.h
+	@ln -sf $< $@
+
+# fes1_head.c includes it, so it must exist before any lib object builds.
+$(LIBS): | $(TOPDIR)/include/commit_info.h
+
+fes: $(LIBS) fes1.lds $(FES_USB_STAMP) $(FES_DRAM_LIB)
 ifdef CFG_WEAK_SYMBOL
 	$(OBJCOPY) $(CFG_WEAK_SYMBOL) $(A-LIBS-y) $(A-OBJS)
 endif
-	$(LD) $(OBJS) $(PLATFORM_LIBGCC) $(LDFLAGS) $(LDFLAGS_GC) -Tfes1.lds -o fes1.elf -Map fes1.map
+	$(LD) $(FES_DRAM_LIB) $(TOPDIR)/board/$(CP_BOARD)/lib$(PLATFORM)_sdcard.a $(OBJS) $(FES_USB_OBJS) $(PLATFORM_LIBGCC) $(LDFLAGS) $(LDFLAGS_GC) --allow-multiple-definition --defsym=BT0_head=fes1_head -Tfes1.lds -o fes1.elf -Map fes1.map
 	$(OBJCOPY) $(OBJCFLAGS) -O binary fes1.elf fes1.bin
 	$(Q)$(TOPDIR)/mk/gen_check_sum fes1.bin fes1_$(PLATFORM)$(DRAM_TYPE_NAME).bin > /dev/null
 	@-cp -v $(TOPDIR)/fes/fes1.map $(PLATFORM_OUTDIR)/fes1.map

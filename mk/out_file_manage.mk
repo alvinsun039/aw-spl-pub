@@ -18,12 +18,12 @@ $(addprefix $(MAKECMDGOALS)/, $(patsubst %.c,%.d,$(notdir $(SRC_C))))
 # $1:src file
 define copy_bin_to_target_dir
 	@-cp -v $1 $(PLATFORM_OUTDIR)/bin
-	@-cp -v $1 $(TARGETDIR)/
-	@-cp -v $1 $(LICHEE_PLAT_OUT)/
+	@-if [ -n "$(TARGETDIR)" ]; then cp -v $1 "$(TARGETDIR)/"; fi
+	@-if [ -n "$(LICHEE_PLAT_OUT)" ]; then cp -v $1 "$(LICHEE_PLAT_OUT)/"; fi
 endef
 
 define copy_platform_outputfile_to_target_dir
 	@-cp -v $1 $(PLATFORM_OUTDIR)/
-	@-cp -v $1 $(TARGETDIR)/
-	@-cp -v $1 $(LICHEE_PLAT_OUT)/
+	@-if [ -n "$(TARGETDIR)" ]; then cp -v $1 "$(TARGETDIR)/"; fi
+	@-if [ -n "$(LICHEE_PLAT_OUT)" ]; then cp -v $1 "$(LICHEE_PLAT_OUT)/"; fi
 endef

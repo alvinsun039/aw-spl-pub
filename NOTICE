@@ -1,0 +1,35 @@
+NOTICE
+======
+
+This tree is the Allwinner Tina SDK U-Boot tree used to build the A733
+FES1 loader.  Files keep their original copyright headers, and the two
+licences involved are:
+
+GPL-2.0-or-later (full text in COPYING)
+  - fes/main/            Allwinner FES1 entry and DRAM training
+  - fes/usb/vendor/      Allwinner USB/EFEX stack (see vendor/README)
+  - fes/usb/include/ub/  U-Boot 2018 header snapshot (see its README)
+
+BSD-2-Clause-Patent
+  - fes/usb/shims/       FES console, exception vectors, MMC backend
+  - fes/usb/Makefile
+
+The BSD-licensed shims stay available under BSD-2-Clause-Patent for
+reuse in other projects.
+
+The FES1 image also links prebuilt vendor objects that are not built
+from this repository:
+
+  - board/a733/libsun60iw2p1_fes.a
+  - board/a733/libsun60iw2p1_sdcard.a
+  - the DRAM training object dramlib/<platform>/spl_libdram/libdram
+    (published by Radxa as allwinner-dramlib, without a licence file)
+
+Those objects carry no separate licence text here, so this repository
+does not relicense them and does not describe the linked image as a
+whole as GPL.  If you distribute a built image, provide the source for
+the GPL/BSD parts above and check the vendor terms for the prebuilt
+objects separately.
+
+The host-side flasher and packer live in the edk2-a733 tree and are
+BSD-2-Clause-Patent; they are not part of this repository.

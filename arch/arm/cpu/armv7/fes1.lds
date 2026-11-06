@@ -30,6 +30,10 @@ SECTIONS
 	__bss_end = .;
 
 	_end = .;
+ .fes_vectors 0xD8000 :
+ {
+  *(.fes_vectors)
+ }
 }
 
 

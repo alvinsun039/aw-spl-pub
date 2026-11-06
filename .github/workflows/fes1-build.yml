@@ -1,0 +1,55 @@
+name: fes1-build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - medium: emmc
+            dev: 2
+            sha256: 9aadcf8a3c93ce6be80e7eb2dedec3d5d89eb95ceca4dc1de002d8bfc69956f7
+          - medium: sd
+            dev: 0
+            sha256: 1f024ce9c889c1a934171c1d9caff63285038aabc100943b3aa26463a3af1df3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the cross compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-linux-gnueabi
+
+      - name: Fetch the pinned DRAM object
+        run: |
+          git clone https://github.com/radxa/allwinner-dramlib.git \
+            "$RUNNER_WORKSPACE/allwinner-dramlib"
+          git -C "$RUNNER_WORKSPACE/allwinner-dramlib" checkout 35e84c8
+
+      - name: Build
+        env:
+          FES_DRAM_LIB: ${{ runner.workspace }}/allwinner-dramlib/sun60iw2p1/spl_libdram/libdram
+          FES_MMC_DEV: ${{ matrix.dev }}
+        run: ./build.sh
+
+      - name: Verify the reference hash
+        run: |
+          image=out/sun60iw2p1/bin/fes1_sun60iw2p1.bin
+          got=$(sha256sum "$image" | awk '{print $1}')
+          echo "${{ matrix.medium }}: $got"
+          if [ "$got" != "${{ matrix.sha256 }}" ]; then
+            echo "::error::image hash differs from the reference build"
+            echo "the CI toolchain may have changed; check compiler/binutils"
+            exit 1
+          fi

@@ -1,6 +1,8 @@
 /*
  * (C) Copyright 2018
  * wangwei <wangwei@allwinnertech.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 #include <config.h>
@@ -48,7 +50,16 @@ const boot0_file_head_t  fes1_head = {
 		0,	/*power_mode*/
 		{0},/* reserver[2] */
 		//unsigned int                dram_para[32] ; 
-		{0},
+		{	/* LPDDR5 8G (cxmt) - from SDK cubie_a7a sys_config [dram_para2] */
+			1800, 9, 0x0e0e0e0e, 0x0f0f0f0f,
+			0xec030e0f, 0, 0xa10a, 0x1001,
+			0, 0, 0, 6,
+			0, 0, 0, 0x1b,
+			0x44, 0, 0x1d, 0,
+			0x86, 0, 0x4040, 0,
+			0x11080503, 0x3800, 0x3514, 0xb25f0000,
+			0, 0, 0x65, 0,
+		},
 		//__s32			     uart_port;   
 		0,
 		//normal_gpio_cfg       uart_ctrl[2];  
@@ -87,18 +98,18 @@ const boot0_file_head_t  fes1_head = {
 
 /*******************************************************************************
 *
-*                  关于Boot_file_head中的jump_instruction字段
+*                  The jump_instruction field in Boot_file_head
 *
-*  jump_instruction字段存放的是一条跳转指令：( B  BACK_OF_Boot_file_head )，此跳
-*转指令被执行后，程序将跳转到Boot_file_head后面第一条指令。
+*  The field holds a branch instruction (B BACK_OF_Boot_file_head);
+*  executing it jumps to the first instruction after Boot_file_head.
 *
-*  ARM指令中的B指令编码如下：
+*  The ARM B instruction is encoded as:
 *          +--------+---------+------------------------------+
 *          | 31--28 | 27--24  |            23--0             |
 *          +--------+---------+------------------------------+
 *          |  cond  | 1 0 1 0 |        signed_immed_24       |
 *          +--------+---------+------------------------------+
-*  《ARM Architecture Reference Manual》对于此指令有如下解释：
+*  The ARM Architecture Reference Manual describes it as follows:
 *  Syntax :
 *  B{<cond>}  <target_address>
 *    <cond>    Is the condition under which the instruction is executed. If the
@@ -112,13 +123,12 @@ const boot0_file_head_t  fes1_head = {
 *              3.  Adding to the contents of the PC, which contains the address
 *                  of the branch instruction plus 8.
 *
-*  由此可知，此指令编码的最高8位为：0b11101010，低24位根据Boot_file_head的大小动
-*态生成，所以指令的组装过程如下：
+*  The top 8 bits are therefore 0b11101010 and the low 24 bits are
+* generated from the size of Boot_file_head, assembled as follows:
 *  ( sizeof( boot_file_head_t ) + sizeof( int ) - 1 ) / sizeof( int )
-*                                              求出文件头占用的“字”的个数
-*  - 2                                         减去PC预取的指令条数
-*  & 0x00FFFFFF                                求出signed-immed-24
-*  | 0xEA000000                                组装成B指令
+*                                              words used by the file header
+*  - 2                                         minus the PC prefetch words
+*  & 0x00FFFFFF                                keep signed_immed_24
+*  | 0xEA000000                                form the B instruction
 *
 *******************************************************************************/
-

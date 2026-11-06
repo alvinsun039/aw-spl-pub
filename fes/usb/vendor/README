@@ -1,0 +1,35 @@
+Vendor USB/EFEX stack provenance
+================================
+
+Source: Allwinner Tina SDK v1.4.8,
+        brandy/brandy-2.0/u-boot-2018/drivers/sunxi_usb/
+        gic_v3.c is from the same tree, arch/arm/mach-sunxi/gic_v3.c
+
+License: GPL-2.0-or-later; every file keeps its original Allwinner
+header.  The linked image also contains the prebuilt vendor objects
+listed in ../../NOTICE, which this licence does not cover.
+
+Copied unchanged: usbc.c usbc_dev.c usbc_dma.c usbc_host.c usbc_phy.c
+usb_base_common.c usb_dma_control.c usb_burn.c efex_queue.c buf_queue.c
+and their headers, plus gic_v3.c.
+
+Locally modified:
+  usb_efex.c           force usb_debug_mode = 0 (the script value read as
+                       1); drop query_storage_list and flash_switch, which
+                       need the board flash probe we do not carry
+  usb_efex.h           drop the flash_switch command struct; DRAM receive
+                       buffer size for spinor
+  usb_base_platform.c  enable the bulk-endpoint RX interrupt (the vendor
+                       path polls once per SOF); the TX-DMA path stays
+                       compiled out because the controller's TX FIFO is
+                       shared with the status stage
+
+Build: ../Makefile.  The u-boot headers this stack consumes are vendored
+under ../include/ub (see the README there); no U-Boot tree is needed.
+
+Other vendored headers: ../include/linux/mtd/mtd.h is the U-Boot MTD
+header with a struct kvec forward declaration added; the U-Boot branch
+of the original relies on a header we do not carry.
+
+Comments in the modified files above were translated to English.  The
+files copied unchanged keep their original Chinese comments.

@@ -31,4 +31,7 @@ int sunxi_fpga_bitfile_init_dram(void);
 unsigned int sunxi_fpga_dram_init(void *para);
 #endif
 
+/* real DRAM init (provided by libdram or board lib) */
+unsigned int init_DRAM(unsigned int dummy, void *para);
+
 #endif /* _SUNXI_DRAM_H */
